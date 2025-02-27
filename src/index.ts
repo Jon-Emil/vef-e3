@@ -1,60 +1,172 @@
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
-import { createCategory, getCategories, getCategory, validateCategory } from './categories.db.js'
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import {
+  createCategory,
+  patchCategory,
+  getCategories,
+  getCategory,
+  deleteCategory,
+} from "./categories.db.js";
+import {
+  slugValidator,
+  createCategoryValidator,
+  patchCategoryValidator,
+} from "./validation.js";
 
-const app = new Hono()
+const app = new Hono();
 
-app.get('/', (c) => {
+app.get("/", (c) => {
+  const data = {
+    hello: "hono",
+  };
 
-  const data =  {
-    hello: 'hono'
-  }
+  return c.json(data);
+});
 
-  return c.json(data)
-})
-
-app.get('/categories', async (c) => {
-  const categories = await getCategories();
-  return c.json(categories)
-})
-
-app.get('/categories/:slug', (c) => {
-  const slug = c.req.param('slug')
-
-  // Validate á hámarkslengd á slug
-
-  const category = getCategory(slug)
-
-  if (!category) {
-    return c.json({ message: 'not found' }, 404)
-  }
-
-  return c.json(category);
-})
-
-app.post('/categories', async (c) => {
-  let categoryToCreate: unknown;
+app.get("/categories", async (c) => {
   try {
-    categoryToCreate = await c.req.json();
-    console.log(categoryToCreate);
+    const categories = await getCategories();
+    return c.json(categories);
   } catch (e) {
-    return c.json({ error: 'invalid json' }, 400)
+    console.error(e);
+    return c.json({ message: "an error came up" }, 500);
   }
+});
 
-  const validCategory = validateCategory(categoryToCreate)
+app.get("/categories/:slug", async (c) => {
+  try {
+    const slug = c.req.param("slug");
 
-  if (!validCategory.success) {
-    return c.json({ error: 'invalid data', errors: validCategory.error.flatten() }, 400)
+    const validSlug = slugValidator(slug);
+
+    if (!validSlug.success) {
+      return c.json(
+        { error: "invalid data", errors: validSlug.error.flatten() },
+        400
+      );
+    }
+
+    const category = await getCategory(slug);
+
+    if (!category) {
+      return c.json({ message: "not found" }, 404);
+    }
+
+    return c.json(category);
+  } catch (e) {
+    console.error(e);
+    return c.json({ message: "an error came up" }, 500);
   }
+});
 
-  const createdCategory = await createCategory(validCategory.data)
+app.post("/categories", async (c) => {
+  try {
+    let categoryToCreate: unknown;
 
-  return c.json(createdCategory, 201)
-})
+    try {
+      categoryToCreate = await c.req.json();
+      console.log(categoryToCreate);
+    } catch (e) {
+      return c.json({ error: "invalid json" }, 400);
+    }
 
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+    const validCategory = createCategoryValidator(categoryToCreate);
+
+    if (!validCategory.success) {
+      return c.json(
+        { error: "invalid data", errors: validCategory.error.flatten() },
+        400
+      );
+    }
+
+    const createdCategory = await createCategory(validCategory.data);
+
+    return c.json(createdCategory, 201);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "an error came up" }, 500);
+  }
+});
+
+app.patch("/categories/:slug", async (c) => {
+  try {
+    let categoryToPatch: unknown;
+
+    try {
+      categoryToPatch = await c.req.json();
+      console.log(categoryToPatch);
+    } catch (e) {
+      return c.json({ error: "invalid json" }, 400);
+    }
+
+    const validCategory = patchCategoryValidator(categoryToPatch);
+
+    if (!validCategory.success) {
+      return c.json(
+        { error: "invalid data", errors: validCategory.error.flatten() },
+        400
+      );
+    }
+
+    const slug = c.req.param("slug");
+    const validSlug = slugValidator(slug);
+
+    if (!validSlug.success) {
+      return c.json(
+        { error: "invalid data", errors: validSlug.error.flatten() },
+        400
+      );
+    }
+
+    const category = await getCategory(slug);
+
+    if (!category) {
+      return c.json({ message: "not found" }, 404);
+    }
+
+    validCategory.data.slug = validSlug.data;
+    const patchedCategory = await patchCategory(validCategory.data);
+
+    return c.json(patchedCategory, 201);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "an error came up" }, 500);
+  }
+});
+
+app.delete("/categories/:slug", async (c) => {
+  try {
+    const slug = c.req.param("slug");
+    const validSlug = slugValidator(slug);
+
+    if (!validSlug.success) {
+      return c.json(
+        { error: "invalid data", errors: validSlug.error.flatten() },
+        400
+      );
+    }
+
+    const category = await getCategory(validSlug.data);
+
+    if (!category) {
+      return c.json({ message: "not found" }, 404);
+    }
+
+    const deletedCategory = await deleteCategory(slug);
+
+    return c.json(deletedCategory, 200);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "an error came up" }, 500);
+  }
+});
+
+serve(
+  {
+    fetch: app.fetch,
+    port: 3000,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+  }
+);

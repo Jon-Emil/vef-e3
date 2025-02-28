@@ -5,13 +5,20 @@ import {
   patchCategory,
   getCategories,
   getCategory,
+  getCategoryByID,
   deleteCategory,
 } from "./categories.db.js";
 import {
   slugValidator,
   createCategoryValidator,
   patchCategoryValidator,
+  createQuestionValidator,
 } from "./validation.js";
+import {
+  getQuestions,
+  getQuestionsCat,
+  createQuestion,
+} from "./questions.db.js";
 
 const app = new Hono();
 
@@ -154,7 +161,69 @@ app.delete("/categories/:slug", async (c) => {
 
     const deletedCategory = await deleteCategory(slug);
 
-    return c.json(deletedCategory, 200);
+    return c.json(deletedCategory);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "an error came up" }, 500);
+  }
+});
+
+app.get("/questions", async (c) => {
+  try {
+    const questions = await getQuestions();
+    return c.json(questions);
+  } catch (e) {
+    console.error(e);
+    return c.json({ message: "an error came up" }, 500);
+  }
+});
+
+app.get("/questions/:cat_id", async (c) => {
+  try {
+    const cat_id = Number(c.req.param("cat_id"));
+    if (isNaN(cat_id)) {
+      return c.json({ message: "category id must be a number" }, 400);
+    }
+
+    if (!(await getCategoryByID(cat_id))) {
+      return c.json({ message: "category not found" }, 404);
+    }
+
+    const questions = await getQuestionsCat(cat_id);
+    return c.json(questions);
+  } catch (e) {
+    console.error(e);
+    return c.json({ message: "an error came up" }, 500);
+  }
+});
+
+app.post("/questions", async (c) => {
+  try {
+    let questionToCreate: unknown;
+
+    try {
+      questionToCreate = await c.req.json();
+      console.log(questionToCreate);
+    } catch (e) {
+      return c.json({ error: "invalid json" }, 400);
+    }
+
+    const validQuestion = createQuestionValidator(questionToCreate);
+
+    if (!validQuestion.success) {
+      return c.json(
+        { error: "invalid data", errors: validQuestion.error.flatten() },
+        400
+      );
+    }
+
+    if (!(await getCategoryByID(validQuestion.data.cat_id))) {
+      return c.json({ message: "invalid category" }, 400);
+    }
+
+    const createdQuestion = await createQuestion(validQuestion.data);
+
+    return c.json(createdQuestion, 201);
   } catch (e) {
     console.error(e);
     return c.json({ error: "an error came up" }, 500);

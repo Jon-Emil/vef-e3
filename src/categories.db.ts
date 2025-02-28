@@ -58,6 +58,16 @@ export async function getCategory(slug: string): Promise<Category | null> {
   return category ?? null;
 }
 
+export async function getCategoryByID(c_id: number): Promise<Category | null> {
+  const category = await prisma.categories.findUnique({
+    where: {
+      id: c_id,
+    },
+  });
+
+  return category ?? null;
+}
+
 export async function createCategory(
   categoryToCreate: CategoryToCreate
 ): Promise<Category> {
@@ -78,6 +88,7 @@ export async function patchCategory(
     where: { slug: categoryToPatch.slug },
     data: {
       title: categoryToPatch.title,
+      slug: categoryToPatch.title,
     },
   });
 

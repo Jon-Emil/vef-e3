@@ -1,7 +1,7 @@
-import { z, type SafeParseError, type SafeParseReturnType } from "zod";
+import { z, type SafeParseReturnType } from "zod";
 
 export function slugValidator(
-  slug: unknown
+  slug: unknown,
 ): SafeParseReturnType<string, string> {
   const slugSchema = z
     .string()

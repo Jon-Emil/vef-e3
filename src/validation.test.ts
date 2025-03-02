@@ -1,4 +1,3 @@
-import exp from "constants";
 import {
   slugValidator,
   createCategoryValidator,
@@ -34,7 +33,7 @@ describe("validation", () => {
     it("should return true for valid inputs", () => {
       expect(createCategoryValidator({ title: "testing" }).success).toBe(true);
       expect(
-        createCategoryValidator({ title: "~~~weird-STRING920ööö" }).success
+        createCategoryValidator({ title: "~~~weird-STRING920ööö" }).success,
       ).toBe(true);
     });
 
@@ -53,7 +52,7 @@ describe("validation", () => {
         createCategoryValidator({
           title:
             " AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        }).success
+        }).success,
       ).toBe(false);
     });
   });
@@ -68,7 +67,7 @@ describe("validation", () => {
             { text: "answer1", correct: true },
             { text: "answer2", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(true);
       expect(
         createQuestionValidator({
@@ -83,7 +82,7 @@ describe("validation", () => {
             },
             { text: "aaa", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(true);
     });
     it("should return false for invalid inputs", () => {
@@ -102,7 +101,7 @@ describe("validation", () => {
             { text: "answer1", correct: true },
             { text: "answer2", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(false);
       expect(
         createQuestionValidator({
@@ -112,7 +111,7 @@ describe("validation", () => {
             { text: "answer1", correct: true },
             { text: "answer2", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(false);
       expect(
         createQuestionValidator({
@@ -122,7 +121,7 @@ describe("validation", () => {
             { text: 1, correct: true },
             { text: "answer2", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(false);
       expect(
         createQuestionValidator({
@@ -132,14 +131,14 @@ describe("validation", () => {
             { text: "answer1", correct: "true" },
             { text: "answer2", correct: "false" },
           ],
-        }).success
+        }).success,
       ).toBe(false);
       expect(
         createQuestionValidator({
           text: "aa",
           cat_id: 9,
           answers: [{ text: "answer1", correct: true }],
-        }).success
+        }).success,
       ).toBe(false);
       expect(
         createQuestionValidator({
@@ -156,7 +155,7 @@ describe("validation", () => {
             { text: "answer8", correct: false },
             { text: "answer9", correct: false },
           ],
-        }).success
+        }).success,
       ).toBe(false);
     });
   });

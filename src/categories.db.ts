@@ -53,7 +53,7 @@ export async function getCategoryByID(c_id: number): Promise<Category | null> {
 }
 
 export async function createCategory(
-  categoryToCreate: CategoryToCreate
+  categoryToCreate: CategoryToCreate,
 ): Promise<Category> {
   const createdCategory = await prisma.categories.create({
     data: {
@@ -67,7 +67,7 @@ export async function createCategory(
 
 export async function patchCategory(
   categoryToPatch: CategoryToCreate,
-  prevSlug: string
+  prevSlug: string,
 ): Promise<Category> {
   const patchedCategory = await prisma.categories.update({
     where: { slug: prevSlug },

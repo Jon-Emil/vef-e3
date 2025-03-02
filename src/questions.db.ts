@@ -62,7 +62,7 @@ export async function getQuestions(): Promise<Array<question>> {
         answers: answers,
       };
       return questionWithAnswers;
-    })
+    }),
   );
   console.log("questions :>> ", correctQuestions);
   return correctQuestions;
@@ -82,7 +82,7 @@ export async function getQuestionsCat(c_id: number): Promise<Array<question>> {
         answers: answers,
       };
       return questionWithAnswers;
-    })
+    }),
   );
   console.log("questions :>> ", correctQuestions);
   return correctQuestions;
@@ -96,7 +96,7 @@ export async function getAnswers(q_id: number): Promise<Array<answer>> {
 }
 
 export async function createQuestion(
-  questionToCreate: questionToCreate
+  questionToCreate: questionToCreate,
 ): Promise<question> {
   const createdQuestion = await prisma.questions.create({
     data: {
@@ -115,7 +115,7 @@ export async function createQuestion(
         },
       });
       return createdAnswer;
-    })
+    }),
   );
 
   const returnQuestion: question = {
@@ -151,7 +151,7 @@ export async function getQuestion(q_id: number): Promise<question | null> {
 
 export async function patchQuestion(
   questionToPatch: questionToCreate,
-  old_id: number
+  old_id: number,
 ): Promise<question> {
   const patchedQuestion = await prisma.questions.update({
     where: { id: old_id },
@@ -175,7 +175,7 @@ export async function patchQuestion(
         },
       });
       return createdAnswer;
-    })
+    }),
   );
 
   const returnQuestion: question = {

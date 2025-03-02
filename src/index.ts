@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import xss from "xss";
 import {
   createCategory,
   patchCategory,
@@ -11,13 +12,15 @@ import {
 import {
   slugValidator,
   createCategoryValidator,
-  patchCategoryValidator,
   createQuestionValidator,
 } from "./validation.js";
 import {
   getQuestions,
   getQuestionsCat,
   createQuestion,
+  getQuestion,
+  patchQuestion,
+  deleteQuestion,
 } from "./questions.db.js";
 
 const app = new Hono();
@@ -49,7 +52,7 @@ app.get("/categories/:slug", async (c) => {
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400
+        400,
       );
     }
 
@@ -74,6 +77,7 @@ app.post("/categories", async (c) => {
       categoryToCreate = await c.req.json();
       console.log(categoryToCreate);
     } catch (e) {
+      console.error(e);
       return c.json({ error: "invalid json" }, 400);
     }
 
@@ -82,9 +86,11 @@ app.post("/categories", async (c) => {
     if (!validCategory.success) {
       return c.json(
         { error: "invalid data", errors: validCategory.error.flatten() },
-        400
+        400,
       );
     }
+
+    validCategory.data.title = xss(validCategory.data.title);
 
     const createdCategory = await createCategory(validCategory.data);
 
@@ -103,36 +109,43 @@ app.patch("/categories/:slug", async (c) => {
       categoryToPatch = await c.req.json();
       console.log(categoryToPatch);
     } catch (e) {
+      console.error(e);
       return c.json({ error: "invalid json" }, 400);
     }
 
-    const validCategory = patchCategoryValidator(categoryToPatch);
+    const validCategory = createCategoryValidator(categoryToPatch);
 
     if (!validCategory.success) {
       return c.json(
         { error: "invalid data", errors: validCategory.error.flatten() },
-        400
+        400,
       );
     }
 
-    const slug = c.req.param("slug");
+    let slug = c.req.param("slug");
     const validSlug = slugValidator(slug);
 
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400
+        400,
       );
     }
 
+    slug = xss(slug);
     const category = await getCategory(slug);
 
     if (!category) {
       return c.json({ message: "not found" }, 404);
     }
 
-    validCategory.data.slug = validSlug.data;
-    const patchedCategory = await patchCategory(validCategory.data);
+    validCategory.data.title = xss(validCategory.data.title);
+    validSlug.data = xss(validSlug.data);
+
+    const patchedCategory = await patchCategory(
+      validCategory.data,
+      validSlug.data,
+    );
 
     return c.json(patchedCategory, 201);
   } catch (e) {
@@ -149,7 +162,7 @@ app.delete("/categories/:slug", async (c) => {
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400
+        400,
       );
     }
 
@@ -161,7 +174,9 @@ app.delete("/categories/:slug", async (c) => {
 
     const deletedCategory = await deleteCategory(slug);
 
-    return c.json(deletedCategory);
+    console.log("deleted this category: ", deletedCategory);
+
+    return c.body(null, 204);
   } catch (e) {
     console.error(e);
     return c.json({ error: "an error came up" }, 500);
@@ -205,6 +220,7 @@ app.post("/questions", async (c) => {
       questionToCreate = await c.req.json();
       console.log(questionToCreate);
     } catch (e) {
+      console.error(e);
       return c.json({ error: "invalid json" }, 400);
     }
 
@@ -213,13 +229,19 @@ app.post("/questions", async (c) => {
     if (!validQuestion.success) {
       return c.json(
         { error: "invalid data", errors: validQuestion.error.flatten() },
-        400
+        400,
       );
     }
 
     if (!(await getCategoryByID(validQuestion.data.cat_id))) {
       return c.json({ message: "invalid category" }, 400);
     }
+
+    validQuestion.data.text = xss(validQuestion.data.text);
+    validQuestion.data.answers = validQuestion.data.answers.map((ans) => ({
+      text: xss(ans.text),
+      correct: ans.correct,
+    }));
 
     const createdQuestion = await createQuestion(validQuestion.data);
 
@@ -230,6 +252,68 @@ app.post("/questions", async (c) => {
   }
 });
 
+app.patch("/questions/:question_id", async (c) => {
+  let questionToPatch: unknown;
+
+  try {
+    questionToPatch = await c.req.json();
+    console.log(questionToPatch);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "invalid json" }, 400);
+  }
+
+  const validQuestion = createQuestionValidator(questionToPatch);
+
+  if (!validQuestion.success) {
+    return c.json(
+      { error: "invalid data", errors: validQuestion.error.flatten() },
+      400,
+    );
+  }
+
+  const q_id = Number(c.req.param("question_id"));
+
+  if (isNaN(q_id)) {
+    return c.json({ message: "category id must be a number" }, 400);
+  }
+
+  const question = await getQuestion(q_id);
+
+  if (!question) {
+    return c.json({ message: "question does not exist" }, 404);
+  }
+
+  validQuestion.data.text = xss(validQuestion.data.text);
+  validQuestion.data.answers = validQuestion.data.answers.map((ans) => ({
+    text: xss(ans.text),
+    correct: ans.correct,
+  }));
+
+  const patchedQuestion = await patchQuestion(validQuestion.data, q_id);
+  return c.json(patchedQuestion, 201);
+});
+
+app.delete("/questions/:question_id", async (c) => {
+  const q_id = Number(c.req.param("question_id"));
+
+  if (isNaN(q_id)) {
+    return c.json({ message: "category id must be a number" }, 400);
+  }
+
+  const question = await getQuestion(q_id);
+
+  if (!question) {
+    return c.json({ message: "question does not exist" }, 404);
+  }
+
+  const deletedQuestion = deleteQuestion(q_id);
+
+  console.log("deleted this question: ", deletedQuestion);
+
+  return c.body(null, 204);
+});
+
 serve(
   {
     fetch: app.fetch,
@@ -237,5 +321,5 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
-  }
+  },
 );

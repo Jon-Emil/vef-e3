@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 
-const CategorySchema = z.object({
+export const CategorySchema = z.object({
   id: z.number(),
   title: z
     .string()
@@ -14,35 +14,19 @@ const CategorySchema = z.object({
     .max(1024, "slug must be at most 1024 letters"),
 });
 
-const CategoryToCreateSchema = z.object({
+export const CategoryToCreateSchema = z.object({
   title: z
     .string()
     .min(3, "title must be at least three letters")
     .max(1024, "title must be at most 1024 letters"),
 });
 
-const CategoryToPatchSchema = z.object({
-  title: z
-    .string()
-    .min(3, "title must be at least three letters")
-    .max(1024, "title must be at most 1024 letters"),
-  slug: z
-    .string()
-    .regex(/^[a-z0-9-]+$/, "invalid slug format")
-    .min(3, "slug must be at least three letters")
-    .max(1024, "slug must be at most 1024 letters"),
-});
-
-type Category = z.infer<typeof CategorySchema>;
-type CategoryToCreate = z.infer<typeof CategoryToCreateSchema>;
-type CategoryToPatch = z.infer<typeof CategoryToPatchSchema>;
+export type Category = z.infer<typeof CategorySchema>;
+export type CategoryToCreate = z.infer<typeof CategoryToCreateSchema>;
 
 const prisma = new PrismaClient();
 
-export async function getCategories(
-  limit: number = 10,
-  offset: number = 0
-): Promise<Array<Category>> {
+export async function getCategories(): Promise<Array<Category>> {
   const categories = await prisma.categories.findMany();
   console.log("categories :>> ", categories);
   return categories;
@@ -82,13 +66,14 @@ export async function createCategory(
 }
 
 export async function patchCategory(
-  categoryToPatch: CategoryToPatch
+  categoryToPatch: CategoryToCreate,
+  prevSlug: string
 ): Promise<Category> {
   const patchedCategory = await prisma.categories.update({
-    where: { slug: categoryToPatch.slug },
+    where: { slug: prevSlug },
     data: {
       title: categoryToPatch.title,
-      slug: categoryToPatch.title,
+      slug: categoryToPatch.title.toLowerCase().replaceAll(" ", "-"),
     },
   });
 

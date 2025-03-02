@@ -1,6 +1,8 @@
-import { z } from "zod";
+import { z, type SafeParseError, type SafeParseReturnType } from "zod";
 
-export function slugValidator(slug: unknown) {
+export function slugValidator(
+  slug: unknown
+): SafeParseReturnType<string, string> {
   const slugSchema = z
     .string()
     .regex(/^[a-z0-9-]+$/, "invalid slug format")
@@ -12,38 +14,44 @@ export function slugValidator(slug: unknown) {
   return result;
 }
 
-export function createCategoryValidator(category: unknown) {
-  const categorySchema = z.object({
-    title: z
-      .string()
-      .min(3, "title must be at least three letters")
-      .max(1024, "title must be at most 1024 letters"),
-  });
-
-  const result = categorySchema.safeParse(category);
-
-  return result;
-}
-
-export function patchCategoryValidator(category: unknown) {
-  const categorySchema = z.object({
-    title: z
-      .string()
-      .min(3, "title must be at least three letters")
-      .max(1024, "title must be at most 1024 letters"),
-    slug: z.string().default(""),
-  });
-
-  const result = categorySchema.safeParse(category);
-
-  if (result.success) {
-    result.data.slug = "";
+export function createCategoryValidator(category: unknown): SafeParseReturnType<
+  {
+    title: string;
+  },
+  {
+    title: string;
   }
+> {
+  const categorySchema = z.object({
+    title: z
+      .string()
+      .min(3, "title must be at least three letters")
+      .max(1024, "title must be at most 1024 letters"),
+  });
+
+  const result = categorySchema.safeParse(category);
 
   return result;
 }
 
-export function createQuestionValidator(question: unknown) {
+export function createQuestionValidator(question: unknown): SafeParseReturnType<
+  {
+    text: string;
+    cat_id: number;
+    answers: {
+      text: string;
+      correct: boolean;
+    }[];
+  },
+  {
+    text: string;
+    cat_id: number;
+    answers: {
+      text: string;
+      correct: boolean;
+    }[];
+  }
+> {
   const answerToCreateSchema = z.object({
     text: z
       .string()

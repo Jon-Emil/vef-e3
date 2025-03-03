@@ -26,11 +26,28 @@ import {
 const app = new Hono();
 
 app.get("/", (c) => {
-  const data = {
-    hello: "hono",
-  };
-
-  return c.json(data);
+  return c.json([
+    {
+      href: "/categories",
+      methods: ["GET", "POST"],
+    },
+    {
+      href: "/categories/:slug",
+      methods: ["GET", "PATCH", "DELETE"],
+    },
+    {
+      href: "/questions",
+      methods: ["GET", "POST"],
+    },
+    {
+      href: "/questions/:cat_id",
+      methods: ["GET"],
+    },
+    {
+      href: "/questions/:question_id",
+      methods: ["PATCH", "DELETE"],
+    },
+  ]);
 });
 
 app.get("/categories", async (c) => {
@@ -52,7 +69,7 @@ app.get("/categories/:slug", async (c) => {
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -86,7 +103,7 @@ app.post("/categories", async (c) => {
     if (!validCategory.success) {
       return c.json(
         { error: "invalid data", errors: validCategory.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -118,7 +135,7 @@ app.patch("/categories/:slug", async (c) => {
     if (!validCategory.success) {
       return c.json(
         { error: "invalid data", errors: validCategory.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -128,7 +145,7 @@ app.patch("/categories/:slug", async (c) => {
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -144,7 +161,7 @@ app.patch("/categories/:slug", async (c) => {
 
     const patchedCategory = await patchCategory(
       validCategory.data,
-      validSlug.data,
+      validSlug.data
     );
 
     return c.json(patchedCategory, 201);
@@ -162,7 +179,7 @@ app.delete("/categories/:slug", async (c) => {
     if (!validSlug.success) {
       return c.json(
         { error: "invalid data", errors: validSlug.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -229,7 +246,7 @@ app.post("/questions", async (c) => {
     if (!validQuestion.success) {
       return c.json(
         { error: "invalid data", errors: validQuestion.error.flatten() },
-        400,
+        400
       );
     }
 
@@ -268,7 +285,7 @@ app.patch("/questions/:question_id", async (c) => {
   if (!validQuestion.success) {
     return c.json(
       { error: "invalid data", errors: validQuestion.error.flatten() },
-      400,
+      400
     );
   }
 
@@ -321,5 +338,5 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
-  },
+  }
 );

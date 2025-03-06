@@ -192,7 +192,7 @@ describe("question.db", () => {
           cat_id: 2,
           answers: [{ text: "Updated answer", correct: false }],
         },
-        1
+        1,
       );
 
       expect(prisma.questions.update).toHaveBeenCalledOnce();

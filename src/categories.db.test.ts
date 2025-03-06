@@ -86,7 +86,7 @@ describe("categories.db", () => {
     it("should create a category", async () => {
       const mockCategory = { id: 1, title: "html", slug: "html" };
       (prisma.categories.create as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockCategory
+        mockCategory,
       );
 
       const result = await createCategory({ title: "html" });
@@ -106,7 +106,7 @@ describe("categories.db", () => {
         slug: "not-html",
       };
       (prisma.categories.update as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockPatchedCategory
+        mockPatchedCategory,
       );
 
       const result = await patchCategory({ title: "not html" }, "html");
@@ -121,7 +121,7 @@ describe("categories.db", () => {
     it("should delete a category", async () => {
       const mockDeletedCategory = { id: 1, title: "html", slug: "html" };
       (prisma.categories.delete as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockDeletedCategory
+        mockDeletedCategory,
       );
 
       const result = await deleteCategory("html");

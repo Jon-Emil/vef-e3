@@ -53,7 +53,7 @@ app.get("/", (c) => {
 app.get("/categories", async (c) => {
   try {
     const categories = await getCategories();
-    return c.json(categories);
+    return c.json(categories, 200);
   } catch (e) {
     console.error(e);
     return c.json({ message: "an error came up" }, 500);

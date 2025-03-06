@@ -40,7 +40,7 @@ describe("categories.db", () => {
         { id: 3, title: "js", slug: "js" },
       ];
       (
-        prisma.categories.findMany as unknown as ReturnType<typeof vi.fn>
+        prisma.categories.findMany as ReturnType<typeof vi.fn>
       ).mockResolvedValue(mockCategories);
 
       const result = await getCategories();
@@ -54,7 +54,7 @@ describe("categories.db", () => {
     it("should return a category based on slug input", async () => {
       const mockCategory = { id: 3, title: "js", slug: "js" };
       (
-        prisma.categories.findUnique as unknown as ReturnType<typeof vi.fn>
+        prisma.categories.findUnique as ReturnType<typeof vi.fn>
       ).mockResolvedValue(mockCategory);
 
       const result = await getCategory("js");
@@ -70,7 +70,7 @@ describe("categories.db", () => {
     it("should get a category by ID", async () => {
       const mockCategory = { id: 2, title: "css", slug: "css" };
       (
-        prisma.categories.findUnique as unknown as ReturnType<typeof vi.fn>
+        prisma.categories.findUnique as ReturnType<typeof vi.fn>
       ).mockResolvedValue(mockCategory);
 
       const result = await getCategoryByID(2);
@@ -85,9 +85,9 @@ describe("categories.db", () => {
   describe("createCategory", () => {
     it("should create a category", async () => {
       const mockCategory = { id: 1, title: "html", slug: "html" };
-      (
-        prisma.categories.create as unknown as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(mockCategory);
+      (prisma.categories.create as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockCategory
+      );
 
       const result = await createCategory({ title: "html" });
 
@@ -105,9 +105,9 @@ describe("categories.db", () => {
         title: "not html",
         slug: "not-html",
       };
-      (
-        prisma.categories.update as unknown as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(mockPatchedCategory);
+      (prisma.categories.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockPatchedCategory
+      );
 
       const result = await patchCategory({ title: "not html" }, "html");
 
@@ -120,9 +120,9 @@ describe("categories.db", () => {
 
     it("should delete a category", async () => {
       const mockDeletedCategory = { id: 1, title: "html", slug: "html" };
-      (
-        prisma.categories.delete as unknown as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(mockDeletedCategory);
+      (prisma.categories.delete as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockDeletedCategory
+      );
 
       const result = await deleteCategory("html");
 
